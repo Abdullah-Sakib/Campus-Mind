@@ -1,0 +1,26 @@
+{
+  "expo": {
+    "name": "CampusMind",
+    "slug": "campusmind",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "backgroundColor": "#2C2A7C"
+    },
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.campusmind.app"
+    },
+    "android": {
+      "package": "com.campusmind.app",
+      "adaptiveIcon": {
+        "backgroundColor": "#2C2A7C"
+      }
+    },
+    "web": {
+      "bundler": "metro"
+    }
+  }
+}
