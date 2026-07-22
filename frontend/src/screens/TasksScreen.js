@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState } from "react";
 import {
   View,
   Text,
@@ -7,42 +7,47 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useFocusEffect } from '@react-navigation/native';
-import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, fonts, radius } from '../theme/theme';
-import Pill from '../components/Pill';
-import { getTasks } from '../api/tasks';
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { useFocusEffect } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import { colors, spacing, fonts, radius } from "../theme/theme";
+import Pill from "../components/Pill";
+import { getTasks } from "../api/tasks";
 
-const FILTERS = ['All', 'Pending', 'Submitted'];
+const FILTERS = ["All", "Pending", "Submitted"];
 
 const formatDueLabel = (dueDate) => {
   const due = new Date(dueDate);
   const today = new Date();
   const diffMs = due.setHours(0, 0, 0, 0) - today.setHours(0, 0, 0, 0);
   const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
-  if (diffDays === 0) return 'Today';
-  if (diffDays === 1) return 'Tomorrow';
-  if (diffDays > 1) return new Date(dueDate).toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
-  return 'Overdue';
+  if (diffDays === 0) return "Today";
+  if (diffDays === 1) return "Tomorrow";
+  if (diffDays > 1)
+    return new Date(dueDate).toLocaleDateString(undefined, {
+      month: "short",
+      day: "numeric",
+    });
+  return "Overdue";
 };
 
 const dueVariant = (dueDate) => {
   const label = formatDueLabel(dueDate);
-  if (label === 'Tomorrow' || label === 'Today' || label === 'Overdue') return 'urgent';
-  return 'warning';
+  if (label === "Tomorrow" || label === "Today" || label === "Overdue")
+    return "urgent";
+  return "warning";
 };
 
 export default function TasksScreen({ navigation }) {
-  const [filter, setFilter] = useState('All');
+  const [filter, setFilter] = useState("All");
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
   const load = async (f) => {
     try {
-      const data = await getTasks(f === 'All' ? undefined : f.toLowerCase());
+      const data = await getTasks(f === "All" ? undefined : f.toLowerCase());
       setTasks(data);
     } catch (err) {
       // ignore
@@ -56,7 +61,7 @@ export default function TasksScreen({ navigation }) {
     useCallback(() => {
       setLoading(true);
       load(filter);
-    }, [filter])
+    }, [filter]),
   );
 
   const onRefresh = () => {
@@ -64,11 +69,11 @@ export default function TasksScreen({ navigation }) {
     load(filter);
   };
 
-  const pendingCount = tasks.filter((t) => t.status === 'pending').length;
-  const submittedCount = tasks.filter((t) => t.status === 'submitted').length;
+  const pendingCount = tasks.filter((t) => t.status === "pending").length;
+  const submittedCount = tasks.filter((t) => t.status === "submitted").length;
 
   return (
-    <SafeAreaView style={styles.safe} edges={['top']}>
+    <SafeAreaView style={styles.safe} edges={["top"]}>
       <View style={styles.header}>
         <View style={styles.headerTop}>
           <View>
@@ -77,7 +82,10 @@ export default function TasksScreen({ navigation }) {
               {pendingCount} pending · {submittedCount} submitted
             </Text>
           </View>
-          <TouchableOpacity style={styles.addBtn} onPress={() => navigation.navigate('AddTask')}>
+          <TouchableOpacity
+            style={styles.addBtn}
+            onPress={() => navigation.navigate("AddTask")}
+          >
             <Ionicons name="add" size={22} color={colors.headerBg} />
           </TouchableOpacity>
         </View>
@@ -92,7 +100,11 @@ export default function TasksScreen({ navigation }) {
               onPress={() => setFilter(f)}
               style={[styles.filterChip, active && styles.filterChipActive]}
             >
-              <Text style={[styles.filterText, active && styles.filterTextActive]}>{f}</Text>
+              <Text
+                style={[styles.filterText, active && styles.filterTextActive]}
+              >
+                {f}
+              </Text>
             </TouchableOpacity>
           );
         })}
@@ -100,18 +112,28 @@ export default function TasksScreen({ navigation }) {
 
       <ScrollView
         contentContainerStyle={styles.body}
-        refreshControl={<RefreshControl refreshing={refreshing} onRefresh={onRefresh} />}
+        refreshControl={
+          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+        }
       >
         {loading ? (
-          <ActivityIndicator color={colors.primary} style={{ marginTop: spacing.xl }} />
+          <ActivityIndicator
+            color={colors.primary}
+            style={{ marginTop: spacing.xl }}
+          />
         ) : tasks.length === 0 ? (
-          <Text style={styles.emptyText}>No tasks here yet. Tap + to add one.</Text>
+          <Text style={styles.emptyText}>
+            No tasks here yet. Tap + to add one.
+          </Text>
         ) : (
           tasks.map((task) => (
             <View key={task._id} style={styles.card}>
               <View style={styles.cardTop}>
                 <Text style={styles.cardTitle}>{task.title}</Text>
-                <Pill label={formatDueLabel(task.dueDate)} variant={dueVariant(task.dueDate)} />
+                <Pill
+                  label={formatDueLabel(task.dueDate)}
+                  variant={dueVariant(task.dueDate)}
+                />
               </View>
               <Text style={styles.cardSubtitle}>
                 {task.type} · {task.course}
@@ -122,7 +144,8 @@ export default function TasksScreen({ navigation }) {
                     styles.progressFill,
                     {
                       width: `${task.progress}%`,
-                      backgroundColor: task.progress >= 70 ? colors.primary : colors.warning,
+                      backgroundColor:
+                        task.progress >= 70 ? colors.primary : colors.warning,
                     },
                   ]}
                 />
@@ -137,8 +160,16 @@ export default function TasksScreen({ navigation }) {
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
-  header: { backgroundColor: colors.headerBg, paddingHorizontal: spacing.md, paddingBottom: spacing.md },
-  headerTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  header: {
+    backgroundColor: colors.headerBg,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+  },
+  headerTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+  },
   title: { ...fonts.h1, color: colors.white },
   subtitle: { ...fonts.body, color: colors.textOnDarkSecondary, marginTop: 4 },
   addBtn: {
@@ -146,10 +177,10 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     backgroundColor: colors.white,
-    alignItems: 'center',
-    justifyContent: 'center',
+    alignItems: "center",
+    justifyContent: "center",
   },
-  filterRow: { flexDirection: 'row', padding: spacing.md, gap: 10 },
+  filterRow: { flexDirection: "row", padding: spacing.md, gap: 1 },
   filterChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
@@ -159,8 +190,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  filterChipActive: { backgroundColor: colors.cardDark, borderColor: colors.cardDark },
-  filterText: { ...fonts.small, fontWeight: '700', color: colors.textPrimary },
+  filterChipActive: {
+    backgroundColor: colors.cardDark,
+    borderColor: colors.cardDark,
+  },
+  filterText: { ...fonts.small, fontWeight: "700", color: colors.textPrimary },
   filterTextActive: { color: colors.white },
   body: { padding: spacing.md, paddingTop: 0 },
   card: {
@@ -169,10 +203,32 @@ const styles = StyleSheet.create({
     padding: spacing.md,
     marginBottom: spacing.md,
   },
-  cardTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
-  cardTitle: { ...fonts.h3, color: colors.white, flex: 1, marginRight: spacing.sm },
-  cardSubtitle: { ...fonts.small, color: colors.textOnDarkSecondary, marginTop: 4, marginBottom: spacing.md },
-  progressTrack: { height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.15)' },
+  cardTop: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "flex-start",
+  },
+  cardTitle: {
+    ...fonts.h3,
+    color: colors.white,
+    flex: 1,
+    marginRight: spacing.sm,
+  },
+  cardSubtitle: {
+    ...fonts.small,
+    color: colors.textOnDarkSecondary,
+    marginTop: 4,
+    marginBottom: spacing.md,
+  },
+  progressTrack: {
+    height: 6,
+    borderRadius: 3,
+    backgroundColor: "rgba(255,255,255,0.15)",
+  },
   progressFill: { height: 6, borderRadius: 3 },
-  emptyText: { textAlign: 'center', color: colors.textSecondary, marginTop: spacing.xl },
+  emptyText: {
+    textAlign: "center",
+    color: colors.textSecondary,
+    marginTop: spacing.xl,
+  },
 });

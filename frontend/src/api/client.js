@@ -4,8 +4,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 // Point this at your backend. Use your machine's LAN IP when testing on a
 // physical device (localhost won't work from a phone).
 // export const API_BASE_URL = "http://localhost:5001/api";
-// export const API_BASE_URL = "http://10.0.2.2:5050/api"; // Use this for Android emulator
-export const API_BASE_URL = "http://192.168.0.103:5050/api"; //  Use this for physical device testing
+export const API_BASE_URL = "http://10.0.2.2:5050/api"; // Use this for Android emulator
+// export const API_BASE_URL = "http://192.168.0.103:5050/api"; //  Use this for physical device testing
 
 const client = axios.create({
   baseURL: API_BASE_URL,
