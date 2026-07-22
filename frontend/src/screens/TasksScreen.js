@@ -163,7 +163,8 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.headerBg,
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.sm,
+    paddingTop: spacing.sm,
   },
   headerTop: {
     flexDirection: "row",

@@ -66,86 +66,92 @@ export default function RoutineScreen({ navigation }) {
         </View>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.dayTabs}
-      >
-        {DAYS.map((day) => {
-          const active = day === activeDay;
-          return (
-            <TouchableOpacity
-              key={day}
-              onPress={() => setActiveDay(day)}
-              style={[styles.dayTab, active && styles.dayTabActive]}
-            >
-              <Text
-                style={[styles.dayTabText, active && styles.dayTabTextActive]}
+      <View style={styles.container}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.dayTabs}
+        >
+          {DAYS.map((day) => {
+            const active = day === activeDay;
+            return (
+              <TouchableOpacity
+                key={day}
+                onPress={() => setActiveDay(day)}
+                style={[styles.dayTab, active && styles.dayTabActive]}
               >
-                {day}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+                <Text
+                  style={[styles.dayTabText, active && styles.dayTabTextActive]}
+                >
+                  {day}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
 
-      <ScrollView
-        style={{ flex: 1 }}
-        contentContainerStyle={styles.body}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {loading ? (
-          <ActivityIndicator
-            color={colors.primary}
-            style={{ marginTop: spacing.xl }}
-          />
-        ) : classes.length === 0 ? (
-          <Text style={styles.emptyText}>
-            No classes on {activeDay}. Tap + to add one.
-          </Text>
-        ) : (
-          <DarkCard>
-            {classes.map((cls, idx) => (
-              <View
-                key={cls._id}
-                style={[
-                  styles.row,
-                  idx !== classes.length - 1 && styles.rowDivider,
-                ]}
-              >
+        <ScrollView
+          style={styles.content}
+          contentContainerStyle={styles.body}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {loading ? (
+            <ActivityIndicator
+              color={colors.primary}
+              style={{ marginTop: spacing.xl }}
+            />
+          ) : classes.length === 0 ? (
+            <Text style={styles.emptyText}>
+              No classes on {activeDay}. Tap + to add one.
+            </Text>
+          ) : (
+            <DarkCard>
+              {classes.map((cls, idx) => (
                 <View
+                  key={cls._id}
                   style={[
-                    styles.dot,
-                    { backgroundColor: cls.colorTag || colors.primary },
+                    styles.row,
+                    idx !== classes.length - 1 && styles.rowDivider,
                   ]}
-                />
-                <View style={{ flex: 1 }}>
-                  <Text style={styles.rowTitle}>{cls.subject}</Text>
-                  <Text style={styles.rowSubtitle}>
-                    {cls.type} · Rm {cls.room}
+                >
+                  <View
+                    style={[
+                      styles.dot,
+                      { backgroundColor: cls.colorTag || colors.primary },
+                    ]}
+                  />
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.rowTitle}>{cls.subject}</Text>
+                    <Text style={styles.rowSubtitle}>
+                      {cls.type} · Rm {cls.room}
+                    </Text>
+                  </View>
+                  <Text style={styles.rowTime}>
+                    {cls.startTime.replace(" AM", "").replace(" PM", "")}–
+                    {cls.endTime.replace(" AM", "").replace(" PM", "")}
                   </Text>
                 </View>
-                <Text style={styles.rowTime}>
-                  {cls.startTime.replace(" AM", "").replace(" PM", "")}–
-                  {cls.endTime.replace(" AM", "").replace(" PM", "")}
-                </Text>
-              </View>
-            ))}
-          </DarkCard>
-        )}
-      </ScrollView>
+              ))}
+            </DarkCard>
+          )}
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: {
+    flex: 1,
+    backgroundColor: colors.background,
+  },
   header: {
     backgroundColor: colors.headerBg,
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.sm,
+    paddingTop: spacing.sm,
   },
   headerTop: {
     flexDirection: "row",
@@ -162,9 +168,13 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  container: {
+    flex: 0,
+  },
   dayTabs: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
+    height: 65,
     gap: 1,
   },
   dayTab: {
@@ -176,14 +186,26 @@ const styles = StyleSheet.create({
     marginRight: 8,
     borderWidth: 1,
     borderColor: colors.border,
+    // backgroundColor: "yellow",
   },
   dayTabActive: {
     backgroundColor: colors.cardDark,
     borderColor: colors.cardDark,
   },
-  dayTabText: { ...fonts.body, fontWeight: "700", color: colors.textPrimary },
+  dayTabText: {
+    ...fonts.body,
+    fontWeight: "700",
+    color: colors.textPrimary,
+  },
   dayTabTextActive: { color: colors.white },
-  body: { padding: spacing.md, paddingTop: 0 },
+  content: {
+    // flex: 1,
+    paddingTop: spacing.md,
+  },
+  body: {
+    padding: spacing.md,
+    paddingTop: 0,
+  },
   row: {
     flexDirection: "row",
     alignItems: "center",

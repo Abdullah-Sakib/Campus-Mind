@@ -76,74 +76,76 @@ export default function NotesScreen({ navigation }) {
         </View>
       </View>
 
-      <ScrollView
-        horizontal
-        showsHorizontalScrollIndicator={false}
-        contentContainerStyle={styles.tagRow}
-      >
-        {tags.map((tag) => {
-          const active = tag === activeTag;
-          return (
-            <TouchableOpacity
-              key={tag}
-              onPress={() => setActiveTag(tag)}
-              style={[styles.tagChip, active && styles.tagChipActive]}
-            >
-              <Text style={[styles.tagText, active && styles.tagTextActive]}>
-                {tag}
-              </Text>
-            </TouchableOpacity>
-          );
-        })}
-      </ScrollView>
+      <View style={styles.container}>
+        <ScrollView
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          contentContainerStyle={styles.tagRow}
+        >
+          {tags.map((tag) => {
+            const active = tag === activeTag;
+            return (
+              <TouchableOpacity
+                key={tag}
+                onPress={() => setActiveTag(tag)}
+                style={[styles.tagChip, active && styles.tagChipActive]}
+              >
+                <Text style={[styles.tagText, active && styles.tagTextActive]}>
+                  {tag}
+                </Text>
+              </TouchableOpacity>
+            );
+          })}
+        </ScrollView>
 
-      <ScrollView
-        contentContainerStyle={styles.body}
-        refreshControl={
-          <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
-        }
-      >
-        {loading ? (
-          <ActivityIndicator
-            color={colors.primary}
-            style={{ marginTop: spacing.xl }}
-          />
-        ) : notes.length === 0 ? (
-          <Text style={styles.emptyText}>
-            No notes yet. Tap + to create one.
-          </Text>
-        ) : (
-          notes.map((note) => (
-            <View key={note._id} style={styles.card}>
-              <View style={styles.cardRow}>
-                <View style={styles.iconBox}>
-                  <Ionicons
-                    name="document-text-outline"
-                    size={20}
-                    color={colors.white}
-                  />
-                </View>
-                <View style={{ flex: 1, marginLeft: spacing.sm }}>
-                  <View style={styles.cardTitleRow}>
-                    <Text style={styles.cardTitle}>{note.title}</Text>
-                    <Pill
-                      label={note.tag}
-                      variant={TAG_VARIANT[note.tag] || "info"}
+        <ScrollView
+          contentContainerStyle={styles.body}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
+          }
+        >
+          {loading ? (
+            <ActivityIndicator
+              color={colors.primary}
+              style={{ marginTop: spacing.xl }}
+            />
+          ) : notes.length === 0 ? (
+            <Text style={styles.emptyText}>
+              No notes yet. Tap + to create one.
+            </Text>
+          ) : (
+            notes.map((note) => (
+              <View key={note._id} style={styles.card}>
+                <View style={styles.cardRow}>
+                  <View style={styles.iconBox}>
+                    <Ionicons
+                      name="document-text-outline"
+                      size={20}
+                      color={colors.white}
                     />
                   </View>
-                  <Text style={styles.cardSubtitle}>
-                    Updated {new Date(note.updatedAt).toLocaleDateString()} ·{" "}
-                    {note.pages} pages ·{" "}
-                    {note.sharedWithClassmates
-                      ? `Shared with ${note.sharedCount || "classmates"}`
-                      : "Private"}
-                  </Text>
+                  <View style={{ flex: 1, marginLeft: spacing.sm }}>
+                    <View style={styles.cardTitleRow}>
+                      <Text style={styles.cardTitle}>{note.title}</Text>
+                      <Pill
+                        label={note.tag}
+                        variant={TAG_VARIANT[note.tag] || "info"}
+                      />
+                    </View>
+                    <Text style={styles.cardSubtitle}>
+                      Updated {new Date(note.updatedAt).toLocaleDateString()} ·{" "}
+                      {note.pages} pages ·{" "}
+                      {note.sharedWithClassmates
+                        ? `Shared with ${note.sharedCount || "classmates"}`
+                        : "Private"}
+                    </Text>
+                  </View>
                 </View>
               </View>
-            </View>
-          ))
-        )}
-      </ScrollView>
+            ))
+          )}
+        </ScrollView>
+      </View>
     </SafeAreaView>
   );
 }
@@ -153,7 +155,8 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: colors.headerBg,
     paddingHorizontal: spacing.md,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.sm,
+    paddingTop: spacing.sm,
   },
   headerTop: {
     flexDirection: "row",
@@ -170,6 +173,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
+  container: { flex: 0 },
   tagRow: { paddingHorizontal: spacing.md, paddingVertical: spacing.md },
   tagChip: {
     height: 45,
