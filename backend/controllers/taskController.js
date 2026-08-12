@@ -66,4 +66,25 @@ const deleteTask = async (req, res, next) => {
   }
 };
 
-module.exports = { getTasks, addTask, updateTask, deleteTask };
+// @route PATCH /api/tasks/:id/status
+// Dedicated endpoint for toggling between pending/submitted
+const setTaskStatus = async (req, res, next) => {
+  try {
+    const { status } = req.body;
+    if (!['pending', 'submitted'].includes(status)) {
+      return res.status(400).json({ message: 'status must be "pending" or "submitted"' });
+    }
+
+    const task = await Task.findOneAndUpdate(
+      { _id: req.params.id, user: req.user._id },
+      { status },
+      { new: true, runValidators: true }
+    );
+    if (!task) return res.status(404).json({ message: 'Task not found' });
+    res.json({ task });
+  } catch (err) {
+    next(err);
+  }
+};
+
+module.exports = { getTasks, addTask, updateTask, deleteTask, setTaskStatus };

@@ -4,16 +4,16 @@ import {
   Text,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing, fonts, radius } from "../theme/theme";
 import DarkCard from "../components/DarkCard";
 import Pill from "../components/Pill";
+import ProfileButton from "../components/ProfileButton";
+import FAB from "../components/FAB";
 import { useAuth } from "../context/AuthContext";
 import { getGpaSummary } from "../api/courses";
 
@@ -72,12 +72,7 @@ export default function GpaScreen({ navigation }) {
               {user?.university || "CampusMind"} · {user?.department || ""}
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.addBtn}
-            onPress={() => navigation.navigate("AddCourse")}
-          >
-            <Ionicons name="add" size={22} color={colors.headerBg} />
-          </TouchableOpacity>
+          <ProfileButton />
         </View>
       </View>
 
@@ -147,6 +142,8 @@ export default function GpaScreen({ navigation }) {
           </>
         )}
       </ScrollView>
+
+      <FAB onPress={() => navigation.navigate("AddCourse")} />
     </SafeAreaView>
   );
 }
@@ -166,15 +163,7 @@ const styles = StyleSheet.create({
   },
   title: { ...fonts.h1, color: colors.white },
   subtitle: { ...fonts.body, color: colors.textOnDarkSecondary, marginTop: 4 },
-  addBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.white,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  body: { padding: spacing.md },
+  body: { padding: spacing.md, paddingBottom: 100 },
   cgpaCard: {
     alignItems: "center",
     marginBottom: spacing.md,

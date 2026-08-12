@@ -1,23 +1,63 @@
-import React, { useState } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, Switch, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
-import { colors, spacing, fonts, radius } from '../theme/theme';
-import FormInput from '../components/FormInput';
-import PrimaryButton from '../components/PrimaryButton';
-import { addNote } from '../api/notes';
+import React, { useCallback, useEffect, useState } from "react";
+import {
+  View,
+  Text,
+  ScrollView,
+  StyleSheet,
+  TouchableOpacity,
+  Switch,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+import { Ionicons } from "@expo/vector-icons";
+import { colors, spacing, fonts, radius } from "../theme/theme";
+import FormInput from "../components/FormInput";
+import PrimaryButton from "../components/PrimaryButton";
+import { addNote, updateNote, getNotes } from "../api/notes";
 
-const DEFAULT_TAGS = ['Compiler', 'Networks', 'AI'];
+const DEFAULT_TAGS = ["Compiler", "Networks", "AI"];
 
-export default function AddNoteScreen({ navigation }) {
-  const [title, setTitle] = useState('');
+export default function AddNoteScreen({ navigation, route }) {
+  const noteId = route.params?.noteId;
+  const isEditing = !!noteId;
+
+  const [title, setTitle] = useState("");
   const [tags, setTags] = useState(DEFAULT_TAGS);
   const [tag, setTag] = useState(DEFAULT_TAGS[0]);
-  const [newTagInput, setNewTagInput] = useState('');
+  const [newTagInput, setNewTagInput] = useState("");
   const [addingTag, setAddingTag] = useState(false);
-  const [content, setContent] = useState('');
+  const [content, setContent] = useState("");
   const [shared, setShared] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(isEditing);
+
+  const loadExisting = useCallback(async () => {
+    try {
+      const notes = await getNotes();
+      const note = notes.find((n) => n._id === noteId);
+      if (!note) {
+        Alert.alert("Not found", "This note could not be found.");
+        navigation.goBack();
+        return;
+      }
+      setTitle(note.title);
+      setContent(note.content || "");
+      setShared(!!note.sharedWithClassmates);
+      setTag(note.tag);
+      // Make sure the note's existing tag shows up as a selectable chip
+      // even if it isn't one of the defaults (e.g. a custom tag).
+      setTags((prev) => (prev.includes(note.tag) ? prev : [...prev, note.tag]));
+    } catch (err) {
+      Alert.alert("Could not load note", err.message);
+    } finally {
+      setLoading(false);
+    }
+  }, [noteId, navigation]);
+
+  useEffect(() => {
+    if (isEditing) loadExisting();
+  }, [isEditing, loadExisting]);
 
   const handleAddTag = () => {
     const trimmed = newTagInput.trim();
@@ -25,39 +65,55 @@ export default function AddNoteScreen({ navigation }) {
       setTags([...tags, trimmed]);
       setTag(trimmed);
     }
-    setNewTagInput('');
+    setNewTagInput("");
     setAddingTag(false);
   };
 
   const handleSave = async () => {
     if (!title) {
-      Alert.alert('Missing info', 'Please give your note a title.');
+      Alert.alert("Missing info", "Please give your note a title.");
       return;
     }
     try {
       setSaving(true);
-      await addNote({
+      const payload = {
         title,
         tag,
         content,
         pages: Math.max(1, Math.ceil(content.length / 1800)),
         sharedWithClassmates: shared,
-      });
+      };
+
+      if (isEditing) {
+        await updateNote(noteId, payload);
+      } else {
+        await addNote(payload);
+      }
       navigation.goBack();
     } catch (err) {
-      Alert.alert('Could not save note', err.message);
+      Alert.alert("Could not save note", err.message);
     } finally {
       setSaving(false);
     }
   };
 
+  if (loading) {
+    return (
+      <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
+        <ActivityIndicator color={colors.primary} style={{ flex: 1 }} />
+      </SafeAreaView>
+    );
+  }
+
   return (
-    <SafeAreaView style={styles.safe} edges={['top', 'bottom']}>
+    <SafeAreaView style={styles.safe} edges={["top", "bottom"]}>
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={10}>
           <Ionicons name="close" size={26} color={colors.textSecondary} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>New Note</Text>
+        <Text style={styles.headerTitle}>
+          {isEditing ? "Edit Note" : "New Note"}
+        </Text>
         <TouchableOpacity onPress={handleSave} disabled={saving}>
           <Text style={styles.saveText}>Save</Text>
         </TouchableOpacity>
@@ -79,7 +135,9 @@ export default function AddNoteScreen({ navigation }) {
               onPress={() => setTag(t)}
               style={[styles.tagChip, tag === t && styles.tagChipActive]}
             >
-              <Text style={[styles.tagText, tag === t && styles.tagTextActive]}>{t}</Text>
+              <Text style={[styles.tagText, tag === t && styles.tagTextActive]}>
+                {t}
+              </Text>
             </TouchableOpacity>
           ))}
           {addingTag ? (
@@ -92,7 +150,10 @@ export default function AddNoteScreen({ navigation }) {
               containerStyle={{ width: 120, marginBottom: 0 }}
             />
           ) : (
-            <TouchableOpacity style={styles.tagChip} onPress={() => setAddingTag(true)}>
+            <TouchableOpacity
+              style={styles.tagChip}
+              onPress={() => setAddingTag(true)}
+            >
               <Text style={styles.tagText}>+ New Tag</Text>
             </TouchableOpacity>
           )}
@@ -121,7 +182,11 @@ export default function AddNoteScreen({ navigation }) {
       </ScrollView>
 
       <View style={styles.footer}>
-        <PrimaryButton title="Save Note" onPress={handleSave} loading={saving} />
+        <PrimaryButton
+          title={isEditing ? "Save Changes" : "Save Note"}
+          onPress={handleSave}
+          loading={saving}
+        />
       </View>
     </SafeAreaView>
   );
@@ -130,9 +195,9 @@ export default function AddNoteScreen({ navigation }) {
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: colors.background },
   header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md,
     backgroundColor: colors.white,
@@ -140,15 +205,20 @@ const styles = StyleSheet.create({
     borderBottomColor: colors.border,
   },
   headerTitle: { ...fonts.h3 },
-  saveText: { color: colors.primary, fontWeight: '700', fontSize: 16 },
+  saveText: { color: colors.primary, fontWeight: "700", fontSize: 16 },
   container: { padding: spacing.md },
   label: {
     ...fonts.label,
     color: colors.textSecondary,
     marginBottom: spacing.sm,
-    textTransform: 'uppercase',
+    textTransform: "uppercase",
   },
-  tagRow: { flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', marginBottom: spacing.md },
+  tagRow: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    alignItems: "center",
+    marginBottom: spacing.md,
+  },
   tagChip: {
     paddingHorizontal: 16,
     paddingVertical: 10,
@@ -159,12 +229,15 @@ const styles = StyleSheet.create({
     marginRight: 10,
     marginBottom: 10,
   },
-  tagChipActive: { backgroundColor: colors.primary, borderColor: colors.primary },
-  tagText: { ...fonts.body, fontWeight: '600', color: colors.textPrimary },
+  tagChipActive: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary,
+  },
+  tagText: { ...fonts.body, fontWeight: "600", color: colors.textPrimary },
   tagTextActive: { color: colors.white },
   shareRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
+    flexDirection: "row",
+    alignItems: "center",
     backgroundColor: colors.white,
     borderRadius: radius.md,
     borderWidth: 1,

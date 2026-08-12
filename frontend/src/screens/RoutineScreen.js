@@ -10,9 +10,10 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing, fonts, radius } from "../theme/theme";
 import DarkCard from "../components/DarkCard";
+import ProfileButton from "../components/ProfileButton";
+import FAB from "../components/FAB";
 import { getRoutine } from "../api/routine";
 
 const DAYS = ["Sat", "Sun", "Mon", "Tue", "Wed", "Thu", "Fri"];
@@ -57,12 +58,7 @@ export default function RoutineScreen({ navigation }) {
             <Text style={styles.title}>Class Routine</Text>
             <Text style={styles.subtitle}>Semester 4 · CSE</Text>
           </View>
-          <TouchableOpacity
-            style={styles.addBtn}
-            onPress={() => navigation.navigate("AddClass")}
-          >
-            <Ionicons name="add" size={22} color={colors.headerBg} />
-          </TouchableOpacity>
+          <ProfileButton />
         </View>
       </View>
 
@@ -138,6 +134,7 @@ export default function RoutineScreen({ navigation }) {
           )}
         </ScrollView>
       </View>
+      <FAB onPress={() => navigation.navigate("AddClass")} />
     </SafeAreaView>
   );
 }

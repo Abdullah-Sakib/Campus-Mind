@@ -13,6 +13,8 @@ import { useFocusEffect } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing, fonts, radius } from "../theme/theme";
 import Pill from "../components/Pill";
+import ProfileButton from "../components/ProfileButton";
+import FAB from "../components/FAB";
 import { getNotes } from "../api/notes";
 
 const TAG_VARIANT = {
@@ -67,12 +69,7 @@ export default function NotesScreen({ navigation }) {
               {notes.length} notes · {sharedCount} shared
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.addBtn}
-            onPress={() => navigation.navigate("AddNote")}
-          >
-            <Ionicons name="add" size={22} color={colors.headerBg} />
-          </TouchableOpacity>
+          <ProfileButton />
         </View>
       </View>
 
@@ -99,6 +96,7 @@ export default function NotesScreen({ navigation }) {
         </ScrollView>
 
         <ScrollView
+          style={styles.content}
           contentContainerStyle={styles.body}
           refreshControl={
             <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -115,7 +113,14 @@ export default function NotesScreen({ navigation }) {
             </Text>
           ) : (
             notes.map((note) => (
-              <View key={note._id} style={styles.card}>
+              <TouchableOpacity
+                key={note._id}
+                style={styles.card}
+                activeOpacity={0.75}
+                onPress={() =>
+                  navigation.navigate("NoteDetail", { noteId: note._id })
+                }
+              >
                 <View style={styles.cardRow}>
                   <View style={styles.iconBox}>
                     <Ionicons
@@ -140,12 +145,19 @@ export default function NotesScreen({ navigation }) {
                         : "Private"}
                     </Text>
                   </View>
+                  <Ionicons
+                    name="chevron-forward"
+                    size={18}
+                    color={colors.textOnDarkSecondary}
+                    style={{ marginLeft: spacing.xs, alignSelf: "center" }}
+                  />
                 </View>
-              </View>
+              </TouchableOpacity>
             ))
           )}
         </ScrollView>
       </View>
+      <FAB onPress={() => navigation.navigate("AddNote")} />
     </SafeAreaView>
   );
 }
@@ -165,15 +177,6 @@ const styles = StyleSheet.create({
   },
   title: { ...fonts.h1, color: colors.white },
   subtitle: { ...fonts.body, color: colors.textOnDarkSecondary, marginTop: 4 },
-  addBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.white,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  container: { flex: 0 },
   tagRow: { paddingHorizontal: spacing.md, paddingVertical: spacing.md },
   tagChip: {
     height: 45,
@@ -191,7 +194,14 @@ const styles = StyleSheet.create({
   },
   tagText: { ...fonts.body, fontWeight: "700", color: colors.textPrimary },
   tagTextActive: { color: colors.white },
-  body: { padding: spacing.md, paddingTop: 0 },
+  container: {
+    flex: 0,
+  },
+  content: {
+    // flex: 1,
+    paddingTop: spacing.md,
+  },
+  body: { padding: spacing.md, paddingTop: 0, paddingBottom: 100 },
   card: {
     backgroundColor: colors.cardDark,
     borderRadius: radius.lg,

@@ -7,13 +7,17 @@ import {
   TouchableOpacity,
   ActivityIndicator,
   RefreshControl,
+  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useFocusEffect } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
 import { colors, spacing, fonts, radius } from "../theme/theme";
 import Pill from "../components/Pill";
-import { getTasks } from "../api/tasks";
+import ProfileButton from "../components/ProfileButton";
+import FAB from "../components/FAB";
+import StatusToggle from "../components/StatusToggle";
+import { getTasks, setTaskStatus } from "../api/tasks";
+import { syncTaskNotifications } from "../utils/notifications";
 
 const FILTERS = ["All", "Pending", "Submitted"];
 
@@ -44,11 +48,13 @@ export default function TasksScreen({ navigation }) {
   const [tasks, setTasks] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [togglingId, setTogglingId] = useState(null);
 
   const load = async (f) => {
     try {
       const data = await getTasks(f === "All" ? undefined : f.toLowerCase());
       setTasks(data);
+      syncTaskNotifications(data);
     } catch (err) {
       // ignore
     } finally {
@@ -69,6 +75,26 @@ export default function TasksScreen({ navigation }) {
     load(filter);
   };
 
+  const handleToggleStatus = async (task) => {
+    const nextStatus = task.status === "pending" ? "submitted" : "pending";
+    const previousTasks = tasks;
+
+    // Optimistic update — flip it immediately, revert if the API call fails.
+    setTasks((prev) =>
+      prev.map((t) => (t._id === task._id ? { ...t, status: nextStatus } : t)),
+    );
+    setTogglingId(task._id);
+
+    try {
+      await setTaskStatus(task._id, nextStatus);
+    } catch (err) {
+      setTasks(previousTasks);
+      Alert.alert("Could not update status", err.message);
+    } finally {
+      setTogglingId(null);
+    }
+  };
+
   const pendingCount = tasks.filter((t) => t.status === "pending").length;
   const submittedCount = tasks.filter((t) => t.status === "submitted").length;
 
@@ -82,12 +108,7 @@ export default function TasksScreen({ navigation }) {
               {pendingCount} pending · {submittedCount} submitted
             </Text>
           </View>
-          <TouchableOpacity
-            style={styles.addBtn}
-            onPress={() => navigation.navigate("AddTask")}
-          >
-            <Ionicons name="add" size={22} color={colors.headerBg} />
-          </TouchableOpacity>
+          <ProfileButton />
         </View>
       </View>
 
@@ -150,10 +171,19 @@ export default function TasksScreen({ navigation }) {
                   ]}
                 />
               </View>
+              <View style={styles.statusRow}>
+                <StatusToggle
+                  status={task.status}
+                  onToggle={() => handleToggleStatus(task)}
+                  loading={togglingId === task._id}
+                />
+              </View>
             </View>
           ))
         )}
       </ScrollView>
+
+      <FAB onPress={() => navigation.navigate("AddTask")} />
     </SafeAreaView>
   );
 }
@@ -173,14 +203,6 @@ const styles = StyleSheet.create({
   },
   title: { ...fonts.h1, color: colors.white },
   subtitle: { ...fonts.body, color: colors.textOnDarkSecondary, marginTop: 4 },
-  addBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: colors.white,
-    alignItems: "center",
-    justifyContent: "center",
-  },
   filterRow: { flexDirection: "row", padding: spacing.md, gap: 1 },
   filterChip: {
     paddingHorizontal: 16,
@@ -197,7 +219,7 @@ const styles = StyleSheet.create({
   },
   filterText: { ...fonts.small, fontWeight: "700", color: colors.textPrimary },
   filterTextActive: { color: colors.white },
-  body: { padding: spacing.md, paddingTop: 0 },
+  body: { padding: spacing.md, paddingTop: 0, paddingBottom: 100 },
   card: {
     backgroundColor: colors.cardDark,
     borderRadius: radius.lg,
@@ -227,6 +249,7 @@ const styles = StyleSheet.create({
     backgroundColor: "rgba(255,255,255,0.15)",
   },
   progressFill: { height: 6, borderRadius: 3 },
+  statusRow: { flexDirection: "row", marginTop: spacing.md },
   emptyText: {
     textAlign: "center",
     color: colors.textSecondary,

@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as authApi from '../api/auth';
+import { setUnauthorizedHandler } from '../utils/authEvents';
 
 const AuthContext = createContext(null);
 const TOKEN_KEY = 'campusmind_token';
@@ -54,6 +55,13 @@ export function AuthProvider({ children }) {
     setToken(null);
     setUser(null);
   }, []);
+
+  // Wire this context's logout up to the axios interceptor so a 401 from
+  // any API call anywhere in the app triggers the same clean logout flow,
+  // without every screen needing to catch auth errors individually.
+  useEffect(() => {
+    setUnauthorizedHandler(logout);
+  }, [logout]);
 
   const value = {
     user,

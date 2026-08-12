@@ -1,6 +1,7 @@
 require("dotenv").config();
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 const connectDB = require("./config/db");
 const { notFound, errorHandler } = require("./middleware/errorHandler");
 
@@ -10,6 +11,8 @@ const taskRoutes = require("./routes/taskRoutes");
 const routineRoutes = require("./routes/routineRoutes");
 const noteRoutes = require("./routes/noteRoutes");
 const homeRoutes = require("./routes/homeRoutes");
+const documentRoutes = require("./routes/documentRoutes");
+const projectRoutes = require("./routes/projectRoutes");
 
 connectDB();
 
@@ -19,6 +22,9 @@ app.use(cors());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
+// Serve uploaded files (documents, project attachments) statically
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+
 app.get("/", (req, res) => res.json({ status: "CampusMind API is running" }));
 
 app.use("/api/auth", authRoutes);
@@ -27,6 +33,8 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/routine", routineRoutes);
 app.use("/api/notes", noteRoutes);
 app.use("/api/home", homeRoutes);
+app.use("/api/documents", documentRoutes);
+app.use("/api/projects", projectRoutes);
 
 app.use(notFound);
 app.use(errorHandler);

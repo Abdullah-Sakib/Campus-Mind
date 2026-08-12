@@ -9,3 +9,6 @@ export const updateTask = (id, payload) =>
   client.put(`/tasks/${id}`, payload).then((r) => r.data.task);
 
 export const deleteTask = (id) => client.delete(`/tasks/${id}`).then((r) => r.data);
+
+export const setTaskStatus = (id, status) =>
+  client.patch(`/tasks/${id}/status`, { status }).then((r) => r.data.task);

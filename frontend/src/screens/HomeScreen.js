@@ -5,8 +5,11 @@ import { useFocusEffect } from '@react-navigation/native';
 import { colors, spacing, fonts, radius } from '../theme/theme';
 import DarkCard from '../components/DarkCard';
 import Pill from '../components/Pill';
+import ProfileButton from '../components/ProfileButton';
 import { useAuth } from '../context/AuthContext';
 import { getDashboard } from '../api/home';
+import { getTasks } from '../api/tasks';
+import { syncTaskNotifications } from '../utils/notifications';
 
 const priorityToVariant = (priority) => {
   if (priority === 'Urgent') return 'urgent';
@@ -40,6 +43,14 @@ export default function HomeScreen({ navigation }) {
     } finally {
       setLoading(false);
       setRefreshing(false);
+    }
+
+    // Best-effort: keep deadline notifications in sync with the latest tasks.
+    try {
+      const tasks = await getTasks();
+      syncTaskNotifications(tasks);
+    } catch (err) {
+      // notifications are non-critical; ignore failures here
     }
   };
 
@@ -77,10 +88,15 @@ export default function HomeScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Text style={styles.greeting}>Good morning, {displayName}</Text>
-          <Text style={styles.dateLine}>
-            {dateStr} · Semester {dashboard?.user?.semester ?? user?.semester ?? ''}
-          </Text>
+          <View style={styles.headerTopRow}>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.greeting}>Good morning, {displayName}</Text>
+              <Text style={styles.dateLine}>
+                {dateStr} · Semester {dashboard?.user?.semester ?? user?.semester ?? ''}
+              </Text>
+            </View>
+            <ProfileButton />
+          </View>
 
           <View style={styles.statsRow}>
             <View style={styles.statBox}>
@@ -163,6 +179,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingBottom: spacing.lg,
     paddingTop: spacing.sm,
+  },
+  headerTopRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
   },
   greeting: { ...fonts.h1, color: colors.white },
   dateLine: { ...fonts.body, color: colors.textOnDarkSecondary, marginTop: 4, marginBottom: spacing.md },
