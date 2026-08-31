@@ -133,10 +133,3 @@ npm install    # picks up multer
 
 The color palette, card styles, and pill/badge styles are pulled directly from your Figma-style mockups: indigo header banner (`#2E2A78`), dark cards (`#15132B`) on a light background (`#EBEBF0`), with a violet primary accent (`#5A4FE0`). All of this lives in `frontend/src/theme/theme.js` if you want to adjust it.
 
-## What you may want to add next
-
-- Real Google OAuth integration on the frontend (the backend endpoint is ready to receive a verified profile)
-- Push notifications for due-soon tasks
-- Offline caching / optimistic updates
-- Note attachments (images/files) — currently text-only
-- Empty/first-run illustrations for a nicer zero-state
